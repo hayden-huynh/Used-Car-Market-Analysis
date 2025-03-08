@@ -8,6 +8,16 @@ from scrapy import signals
 # useful for handling different item types with a single interface
 from itemadapter import is_item, ItemAdapter
 
+# from scrapy.downloadermiddlewares.useragent import UserAgentMiddleware
+# from fake_useragent import UserAgent
+
+# # Middleware to inject a random user agent before every request
+# class RotateUserAgentMiddleware(UserAgentMiddleware):
+#     def __init__(self, user_agent=''):
+#         self.user_agent = UserAgent()
+
+#     def process_request(self, request, spider):
+#         request.headers['User-Agent'] = self.user_agent.random
 
 class DataExtractorSpiderMiddleware:
     # Not all methods need to be defined. If a method is not defined,
