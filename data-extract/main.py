@@ -92,7 +92,7 @@ def request_details_api(session: requests.Session, id: str, zip: str, distance: 
                 else ""
             ),
             "ownerCount": (
-                info.get("vehicleHistory", "").get("ownerCount", "")
+                info.get("vehicleHistory").get("ownerCount")
                 if "ownerCount" in info.get("vehicleHistory")
                 else ""
             ),
