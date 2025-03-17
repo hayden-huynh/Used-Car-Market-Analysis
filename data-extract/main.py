@@ -48,21 +48,25 @@ def request_details_api(session: requests.Session, id: str, zip: str, distance: 
     info = data["listing"]
     return {
         "priceInfo": {
-            "price": info["price"],
-            "priceString": info["priceString"],
-            "dealRating": info["dealRatingKey"],
-            "savedCount": info["savedCount"],
+            "price": info.get("price", ""),
+            "priceString": info.get("priceString", ""),
+            "dealRating": info.get("dealRatingKey", ""),
+            "savedCount": info.get("savedCount", ""),
         },
         "specs": {
             "url": f"https://www.cargurus.com/Cars/inventorylisting/viewDetailsFilterViewInventoryListing.action?sourceContext=carGurusHomePageModel&entitySelectingHelper.selectedEntity=&zip={zip}#listing={id}",
-            "vin": info["vin"],
-            "stockNumber": info["stockNumber"],
-            "make": info["makeName"],
-            "model": info["modelName"],
-            "year": info["year"],
+            "vin": info.get("vin", ""),
+            "stockNumber": info.get("stockNumber", ""),
+            "make": info.get("makeName", ""),
+            "model": info.get("modelName", ""),
+            "year": info.get("year", ""),
             "trimName": info.get("trimName", ""),
-            "mileage": info["mileage"],
-            "bodyType": data["autoEntityInfo"]["bodyStyle"],
+            "mileage": info.get("mileage", ""),
+            "bodyType": (
+                data.get("autoEntityInfo").get("bodyStyle")
+                if "bodyStyle" in data.get("autoEntityInfo")
+                else ""
+            ),
             "exteriorColor": info.get("localizedExteriorColor", ""),
             "interiorColor": info.get("localizedInteriorColor", ""),
             "driveTrain": info.get("localizedDriveTrain", ""),
@@ -84,8 +88,8 @@ def request_details_api(session: requests.Session, id: str, zip: str, distance: 
             ),
             "fuelType": info.get("localizedFuelType", ""),
             "options": info.get("options", ""),
-            "daysAtDealer": info["listingHistory"]["daysAtDealer"],
-            "daysOnCarGurus": info["listingHistory"]["daysOnCarGurus"],
+            "daysAtDealer": info.get("listingHistory").get("daysAtDealer", ""),
+            "daysOnCarGurus": info.get("listingHistory").get("daysOnCarGurus", ""),
             "accidentCount": (
                 info.get("vehicleHistory").get("accidentCount")
                 if "accidentCount" in info.get("vehicleHistory")
