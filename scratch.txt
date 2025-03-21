@@ -1,0 +1,26 @@
+Traceback (most recent call last):
+  File "/home/hayden-huynh/Projects/Used-Car-Market-Analysis/data-extract/extract-venv/lib/python3.12/site-packages/curl_cffi/requests/session.py", line 597, in request
+    c.perform()
+  File "/home/hayden-huynh/Projects/Used-Car-Market-Analysis/data-extract/extract-venv/lib/python3.12/site-packages/curl_cffi/curl.py", line 319, in perform
+    self._check_error(ret, "perform")
+  File "/home/hayden-huynh/Projects/Used-Car-Market-Analysis/data-extract/extract-venv/lib/python3.12/site-packages/curl_cffi/curl.py", line 150, in _check_error
+    raise error
+curl_cffi.curl.CurlError: Failed to perform, curl: (16) . See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/hayden-huynh/Projects/Used-Car-Market-Analysis/data-extract/main.py", line 129, in <module>
+    main()
+  File "/home/hayden-huynh/Projects/Used-Car-Market-Analysis/data-extract/main.py", line 121, in main
+    car_data = request_details_api(session, id, zip, distance)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hayden-huynh/Projects/Used-Car-Market-Analysis/data-extract/main.py", line 49, in request_details_api
+    response = session.get(api_url)
+               ^^^^^^^^^^^^^^^^^^^^
+  File "/home/hayden-huynh/Projects/Used-Car-Market-Analysis/data-extract/extract-venv/lib/python3.12/site-packages/curl_cffi/requests/session.py", line 614, in get
+    return self.request(method="GET", url=url, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/hayden-huynh/Projects/Used-Car-Market-Analysis/data-extract/extract-venv/lib/python3.12/site-packages/curl_cffi/requests/session.py", line 602, in request
+    raise error(str(e), e.code, rsp) from e
+curl_cffi.requests.exceptions.HTTPError: Failed to perform, curl: (16) . See https://curl.se/libcurl/c/libcurl-errors.html first for more details.
