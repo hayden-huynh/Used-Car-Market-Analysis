@@ -1,0 +1,7 @@
+docker run -dt                                                           \
+  -p 9000:9000 -p 9001:9001                                              \
+  -v ~/minio/data:/mnt/data                                              \
+  -v ~/Projects/Used-Car-Market-Analysis/minio_settings:/etc/config.env  \
+  -e "MINIO_CONFIG_ENV_FILE=/etc/config.env"                             \
+  --name "minio_server"                                                  \
+  minio/minio server --console-address ":9001"
