@@ -77,59 +77,61 @@ def request_details_api(
         info = data["listing"]
         return {
             "timestamp": datetime.now().strftime("%Y-%m-%d %H-%M-%S"),
-            "vin": info.get("vin", ""),
+            "vin": info.get("vin", None),
             "priceInfo": {
-                "price": info.get("price", ""),
-                "priceString": info.get("priceString", ""),
-                "dealRating": info.get("dealRatingKey", ""),
-                "savedCount": info.get("savedCount", ""),
+                "price": info.get("price", None),
+                "priceString": info.get("priceString", None),
+                "dealRating": info.get("dealRatingKey", None),
+                "savedCount": info.get("savedCount", None),
             },
             "specs": {
-                "fullName": info.get("listingTitleOnly", ""),
+                "fullName": info.get("listingTitleOnly", None),
                 "url": f"https://www.cargurus.com/Cars/inventorylisting/viewDetailsFilterViewInventoryListing.action?sourceContext=carGurusHomePageModel&entitySelectingHelper.selectedEntity=&zip={zip}#listing={id}",
-                "stockNumber": info.get("stockNumber", ""),
-                "make": info.get("makeName", ""),
-                "model": info.get("modelName", ""),
-                "year": info.get("year", ""),
-                "trimName": info.get("trimName", ""),
-                "mileage": info.get("mileage", ""),
+                "stockNumber": info.get("stockNumber", None),
+                "make": info.get("makeName", None),
+                "model": info.get("modelName", None),
+                "year": info.get("year", None),
+                "trimName": info.get("trimName", None),
+                "mileage": info.get("mileage", None),
                 "bodyType": (
                     data.get("autoEntityInfo").get("bodyStyle")
                     if "bodyStyle" in data.get("autoEntityInfo")
-                    else ""
+                    else None
                 ),
-                "exteriorColor": info.get("localizedExteriorColor", ""),
-                "interiorColor": info.get("localizedInteriorColor", ""),
-                "driveTrain": info.get("localizedDriveTrain", ""),
-                "transmission": info.get("localizedTransmission", ""),
+                "exteriorColor": info.get("localizedExteriorColor", None),
+                "interiorColor": info.get("localizedInteriorColor", None),
+                "driveTrain": info.get("localizedDriveTrain", None),
+                "transmission": info.get("localizedTransmission", None),
                 "mpgCity": (
                     info.get("cityFuelEconomy").get("value")
                     if "cityFuelEconomy" in info
-                    else ""
+                    else None
                 ),
                 "mpgHighway": (
                     info.get("highwayFuelEconomy").get("value")
                     if "highwayFuelEconomy" in info
-                    else ""
+                    else None
                 ),
                 "mpgCombined": (
                     info.get("combinedFuelEconomy").get("value")
                     if "combinedFuelEconomy" in info
-                    else ""
+                    else None
                 ),
-                "fuelType": info.get("localizedFuelType", ""),
-                "options": info.get("options", ""),
-                "daysAtDealer": info.get("listingHistory").get("daysAtDealer", ""),
-                "daysOnCarGurus": info.get("listingHistory").get("daysOnCarGurus", ""),
+                "fuelType": info.get("localizedFuelType", None),
+                "options": info.get("options", None),
+                "daysAtDealer": info.get("listingHistory").get("daysAtDealer", None),
+                "daysOnCarGurus": info.get("listingHistory").get(
+                    "daysOnCarGurus", None
+                ),
                 "accidentCount": (
                     info.get("vehicleHistory").get("accidentCount")
                     if "accidentCount" in info.get("vehicleHistory")
-                    else ""
+                    else None
                 ),
                 "ownerCount": (
                     info.get("vehicleHistory").get("ownerCount")
                     if "ownerCount" in info.get("vehicleHistory")
-                    else ""
+                    else None
                 ),
             },
         }
@@ -143,7 +145,8 @@ async def main():
     distance = "50"
     session = get_curl_session()
     retry_queue = queue.Queue()
-    for current_page in range(1, 11):
+    unique_cars = set()
+    for current_page in range(1, 31):
         # Fetch car ids from current search page
         car_ids = request_listings_api(session, zip, distance, current_page)
 
@@ -153,13 +156,13 @@ async def main():
         )
         for id in car_ids:
             car_data = request_details_api(session, id, zip, distance, retry_queue)
-            if not car_data:
-                print("Car Not Found on First Try")
-            else:
+            if car_data:
+                unique_cars.add(car_data["vin"])
                 print(car_data["specs"]["fullName"])
                 asyncio.create_task(
                     minio_util.upload_json(source="cargurus", car_data=car_data)
                 )
+                # await minio_util.upload_json(source="cargurus", car_data=car_data)
 
         # Retry failed car detail requests of the same page. Retry only once
         if not retry_queue.empty():
@@ -170,14 +173,29 @@ async def main():
                 car_data = request_details_api(
                     session, retry_queue.get(), zip, distance
                 )
-                print(
-                    "Car Not Found on Retry. Car Skipped"
-                    if not car_data
-                    else car_data["specs"]["fullName"]
-                )
+                if not car_data:
+                    print("Car Not Found on Retry. Car Skipped")
+                else:
+                    unique_cars.add(car_data["vin"])
+                    print(car_data["specs"]["fullName"])
+                    asyncio.create_task(
+                        minio_util.upload_json(source="cargurus", car_data=car_data)
+                    )
+                    # await minio_util.upload_json(source="cargurus", car_data=car_data)
+
+        # await asyncio.gather(*upload_tasks)
+        # upload_tasks = []
 
         # Move to next page
         current_page += 1
+
+    # Wait for remaining unfinished file uploads
+    all_tasks = asyncio.all_tasks()
+    main_coro = asyncio.current_task()
+    all_tasks.remove(main_coro)
+    await asyncio.wait(all_tasks)
+
+    print(f"\n\nSuccessfully extracted {len(unique_cars)} car records")
 
 
 if __name__ == "__main__":
