@@ -1,3 +1,6 @@
 **/.env
 **/minio_settings
 **/__pycache__
+**/*_container.txt
+**/scratch.txt
+**/venv/

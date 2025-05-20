@@ -1,7 +1,8 @@
 from minio import Minio, S3Error
 from dotenv import load_dotenv
-from io import BytesIO
+from io import BytesIO, StringIO
 from datetime import datetime
+import pandas as pd
 import asyncio
 import time
 import json
@@ -23,13 +24,12 @@ client = Minio(
     secure=False,
 )
 
-semaphore = asyncio.Semaphore(5)
+semaphore = asyncio.Semaphore(10)
 
 
-async def upload_json(source: str, car_data: dict):
+async def upload_json(source: str, car_vin: str, car_data: dict):
     async with semaphore:
         # Parse the json file name
-        car_vin = car_data["vin"]
         file_name = f'{source}/{datetime.now().strftime("%Y-%m-%d/%H")}/{car_vin}.json'
 
         # Convert data dict to stream bytes
@@ -75,3 +75,32 @@ def download_json(source: str, time_frame: str):
             print(f"Failed to parse object {car.object_name}: {e}")
 
     return records
+
+
+def upload_csv(df: pd.DataFrame, source: str, time_frame: str):
+    # Convert dataframe to CSV bytes
+    csv_buffer = StringIO()
+    df.to_csv(csv_buffer, index=False)
+    csv_bytes = BytesIO(csv_buffer.getvalue().encode("utf-8"))
+
+    # Write the CSV bytes to MinIO
+    client.put_object(
+        bucket_name=BUCKET_NAME,
+        object_name=f"{source}/{time_frame}/combined.csv",
+        data=csv_bytes,
+        length=len(csv_bytes.getvalue()),
+        content_type="text/csv",
+    )
+
+
+def download_csv(source: str, time_frame: str):
+    # Read the CSV file from MinIO
+    response = client.get_object(
+        bucket_name=BUCKET_NAME,
+        object_name=f"{source}/{time_frame}/combined.csv",
+    )
+    csv_bytes = response.read()
+    response.close()
+
+    # Return the comnbined CSV data as a DataFrame
+    return pd.read_csv(StringIO(csv_bytes.decode("utf-8")))
