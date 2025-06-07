@@ -152,7 +152,7 @@ def request_details_api(
         return {}
 
 
-async def main():
+async def extract():
     zip = "75081"
     distance = "50"
     session = curl_util.get_curl_session()
@@ -163,14 +163,14 @@ async def main():
         car_ids = request_listings_api(session, zip, distance, current_page)
 
         # Extract and upload all car data on current page
-        print(
-            f"=============================== Page {current_page} ====================================="
-        )
+        # print(
+        #     f"=============================== Page {current_page} ====================================="
+        # )
         for id in car_ids:
             car_data = request_details_api(session, id, zip, distance, retry_queue)
             if car_data:
                 unique_cars.add(car_data["specs"]["vin"])
-                print(car_data["specs"]["fullName"])
+                # print(car_data["specs"]["fullName"])
                 asyncio.create_task(
                     minio_util.upload_json(
                         source="cargurus",
@@ -181,18 +181,19 @@ async def main():
 
         # Retry failed car detail requests of the same page. Retry only once
         if not retry_queue.empty():
-            print(
-                f"=============================== Page {current_page} Retries ====================================="
-            )
+            # print(
+            #     f"=============================== Page {current_page} Retries ====================================="
+            # )
             while not retry_queue.empty():
                 car_data = request_details_api(
                     session, retry_queue.get(), zip, distance
                 )
                 if not car_data:
-                    print("Car Not Found on Retry. Car Skipped")
+                    # print("Car Not Found on Retry. Car Skipped")
+                    continue
                 else:
                     unique_cars.add(car_data["specs"]["vin"])
-                    print(car_data["specs"]["fullName"])
+                    # print(car_data["specs"]["fullName"])
                     asyncio.create_task(
                         minio_util.upload_json(
                             source="cargurus",
@@ -210,8 +211,12 @@ async def main():
     all_tasks.remove(main_coro)
     await asyncio.wait(all_tasks)
 
-    print(f"\n\nSuccessfully extracted {len(unique_cars)} car records")
+    # print(f"\n\nSuccessfully extracted {len(unique_cars)} car records")
+
+
+def run_extract_sync():
+    asyncio.run(extract())
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    run_extract_sync()

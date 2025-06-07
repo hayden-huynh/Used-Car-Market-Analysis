@@ -23,12 +23,12 @@ def get_auto_transmission_speed(value):
         return None
 
 
-def main():
+def load():
     # Download the CSV file from MinIO into a DataFrame
     source = "cargurus"
     time_frame = datetime.now().strftime("%Y-%m-%d/%H")
-    test_time_frame = "2025-05-19/19"
-    df = download_csv(source, test_time_frame)
+    # test_time_frame = "2025-05-19/19"
+    df = download_csv(source, time_frame)
 
     # Convert specs.options from string representation of list to actual list
     df["specs.options"] = df["specs.options"].apply(
@@ -234,4 +234,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    load()
