@@ -13,14 +13,14 @@ POSTGRES_USER = os.getenv("POSTGRES_USER")
 POSTGRES_PWD = os.getenv("POSTGRES_PWD")
 
 
-def get_auto_transmission_speed(value):
-    if value:
-        try:
-            return int(value)
-        except (ValueError, TypeError):
-            return 0
-    else:
-        return None
+# def get_auto_transmission_speed(value):
+#     if value:
+#         try:
+#             return int(value)
+#         except (ValueError, TypeError):
+#             return 0
+#     else:
+#         return None
 
 
 def load():
@@ -62,21 +62,21 @@ def load():
                 "exterior_color",
                 "interior_color",
                 "engine",
-                "engine_full_name",
-                "cylinder_count",
-                "engine_size",
-                "engine_config",
+                # "engine_full_name",
+                # "cylinder_count",
+                # "engine_size",
+                # "engine_config",
                 "fuel_type",
-                "fuel_grade",
-                "engine_hp",
-                "engine_torque",
-                "horsepower_rpm",
-                "torque_rpm",
+                # "fuel_grade",
+                # "engine_hp",
+                # "engine_torque",
+                # "horsepower_rpm",
+                # "torque_rpm",
                 "drivetrain",
                 "transmission",
-                "transmission_type",
-                "automatic_trans_type",
-                "automatic_trans_speed",
+                # "transmission_type",
+                # "automatic_trans_type",
+                # "automatic_trans_speed",
                 "mpg_city",
                 "mpg_highway",
                 "mpg_combined",
@@ -90,8 +90,8 @@ def load():
                 "has_vehicle_history_report",
                 "has_thirdparty_vehicle_damage_report",
                 "is_fleet_vehicle",
-                "base_msrp",
-                "destination_charge",
+                # "base_msrp",
+                # "destination_charge",
             ]
             dim_seller_cols = [
                 "seller_type",
@@ -107,9 +107,9 @@ def load():
 
             for _, row in df.iterrows():
                 # Insert car specs data
-                auto_trans_speed = get_auto_transmission_speed(
-                    row["specs.automaticTransSpeed"]
-                )
+                # auto_trans_speed = get_auto_transmission_speed(
+                #     row["specs.automaticTransSpeed"]
+                # )
                 cur.execute(
                     f"""
                     INSERT INTO dim_car (vin, {', '.join(dim_car_cols)})
@@ -132,21 +132,21 @@ def load():
                         row["specs.exteriorColor"],
                         row["specs.interiorColor"],
                         row["specs.engine"],
-                        row["specs.engineFullName"],
-                        row["specs.cylinderCount"],
-                        row["specs.engineSize"],
-                        row["specs.engineConfig"],
+                        # row["specs.engineFullName"],
+                        # row["specs.cylinderCount"],
+                        # row["specs.engineSize"],
+                        # row["specs.engineConfig"],
                         row["specs.fuelType"],
-                        row["specs.fuelGrade"],
-                        row["specs.engineHp"],
-                        row["specs.engineTorque"],
-                        row["specs.horsepowerRPM"],
-                        row["specs.torqueRPM"],
+                        # row["specs.fuelGrade"],
+                        # row["specs.engineHp"],
+                        # row["specs.engineTorque"],
+                        # row["specs.horsepowerRPM"],
+                        # row["specs.torqueRPM"],
                         row["specs.driveTrain"],
                         row["specs.transmission"],
-                        row["specs.transmissionType"],
-                        row["specs.automaticTransType"],
-                        auto_trans_speed,
+                        # row["specs.transmissionType"],
+                        # row["specs.automaticTransType"],
+                        # auto_trans_speed,
                         row["specs.mpgCity"],
                         row["specs.mpgHighway"],
                         row["specs.mpgCombined"],
@@ -171,8 +171,8 @@ def load():
                         row["history.hasVehicleHistoryReport"],
                         row["history.hasThirdPartyVehicleDamageData"],
                         row["history.isFleetVehicle"],
-                        row["history.baseMsrp"],
-                        row["history.destinationCharge"],
+                        # row["history.baseMsrp"],
+                        # row["history.destinationCharge"],
                     ],
                 )
 
