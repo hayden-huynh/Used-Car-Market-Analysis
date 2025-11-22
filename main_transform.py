@@ -169,9 +169,17 @@ def transform():
     )
 
     ## Add mileage per year
-    df["specs.mileagePerYear"] = (
-        df["specs.mileage"] / (datetime.now().year - df["specs.year"])
-    ).apply(lambda x: round(x, 2))
+    # df["specs.mileagePerYear"] = (
+    #     df["specs.mileage"] / (datetime.now().year - df["specs.year"])
+    # ).apply(lambda x: round(x, 2))
+    df["specs.mileagePerYear"] = df.apply(
+        lambda row: (
+            round(row["specs.mileage"] / (datetime.now().year - row["specs.year"]), 2)
+            if (datetime.now().year - row["specs.year"]) != 0
+            else row["specs.mileage"]
+        ),
+        axis=1,
+    )
 
     ## Add extra engine, transmission, msrp, mpg data from API
     # df[

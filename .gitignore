@@ -4,3 +4,6 @@
 **/*_container.txt
 **/scratch.txt
 **/venv/
+**/simple_auth_manager_passwords.json.generated
+**/analysis-venv
+**/.ipynb_checkpoints

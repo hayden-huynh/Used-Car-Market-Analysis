@@ -3,27 +3,32 @@ from datetime import datetime
 import minio_util
 import asyncio
 import queue
+import traceback
 
 
 def request_listings_api(session, zip: str, distance: str, page: int):
     # Customizable parameters: zip, distance, pageNumber
-    api_url = f"https://www.cargurus.com/Cars/searchPage.action?zip={zip}&distance={distance}&sourceContext=carGurusHomePageModel&inventorySearchWidgetType=AUTO&sortDir=ASC&sortType=BEST_MATCH&srpVariation=DEFAULT_SEARCH&isDeliveryEnabled=true&nonShippableBaseline=0&pageNumber={page}&filtersModified=true"
+    api_url = f"https://www.cargurus.com/Cars/searchPage.action?zip={zip}&distance={distance}&sourceContext=carGurusHomePageModel&sortDir=ASC&sortType=BEST_MATCH&srpVariation=DEFAULT_SEARCH&isDeliveryEnabled=true&nonShippableBaseline=0&pageNumber={page}&filtersModified=true"
     try:
         response = session.get(api_url)
         data = response.json()
-        car_ids = (
-            [
-                str(listing["data"]["id"])
-                for listing in data["tiles"]
-                if listing["type"] != "MERCH"
-            ]
-            if "tiles" in data
-            else []
-        )
+        car_ids = []
+        for listing in data["tiles"]:
+            if "MERCH" not in listing["type"]:
+                car_ids.append(str(listing["data"]["id"]))
+        # car_ids = (
+        #     [
+        #         str(listing["data"]["id"])
+        #         for listing in data["tiles"]
+        #         if listing["type"] != "MERCH"
+        #     ]
+        #     if "tiles" in data
+        #     else []
+        # )
         return car_ids
     except Exception as e:
         print(f"Caught Error: {e}")
-        return []
+        traceback.print_exc()
 
 
 def request_details_api(
@@ -35,6 +40,7 @@ def request_details_api(
         response = session.get(api_url)
     except Exception as e:
         print(f"Caught Error: {e}")
+        traceback.print_exc()
         if retry_q is not None:
             retry_q.put(id)
             print(f"Added id {id} into retry queue")
