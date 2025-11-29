@@ -15,25 +15,14 @@ default_args = {
     "retry_delay": timedelta(seconds=5),
     "email_on_failure": False,
     "email_on_retry": False,
-    # 'queue': 'bash_queue',
-    # "pool": "high_priority",
     "priority_weight": 1000000,
-    # 'end_date': datetime(2016, 1, 1),
-    # 'wait_for_downstream': False,
-    # 'execution_timeout': timedelta(seconds=300),
-    # 'on_failure_callback': some_function, # or list of functions
-    # 'on_success_callback': some_other_function, # or list of functions
-    # 'on_retry_callback': another_function, # or list of functions
-    # 'sla_miss_callback': yet_another_function, # or list of functions
-    # 'on_skipped_callback': another_function, #or list of functions
-    # 'trigger_rule': 'all_success'
 }
 
 with DAG(
     "cargurus_used_cars",
     default_args=default_args,
     description="ETL pipeline for used cars data from CarGurus",
-    schedule="0 */2 * * *",  # At minute 0 every hour
+    schedule="0 */2 * * *",  # At minute 0 every 2 hour
     start_date=datetime(2025, 11, 1, 0, 0),
     catchup=False,
     tags=["ETL", "CarGurus", "Used Cars"],

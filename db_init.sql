@@ -13,21 +13,9 @@ CREATE TABLE IF NOT EXISTS dim_car (
     exterior_color TEXT,
     interior_color TEXT,
     engine TEXT,
-    -- engine_full_name TEXT,
-    -- cylinder_count INTEGER,
-    -- engine_size REAL,
-    -- engine_config TEXT,
     fuel_type TEXT,
-    -- fuel_grade TEXT,
-    -- engine_hp INTEGER,
-    -- engine_torque INTEGER,
-    -- horsepower_rpm INTEGER,
-    -- torque_rpm INTEGER,
     drivetrain TEXT,
     transmission TEXT,
-    -- transmission_type TEXT,
-    -- automatic_trans_type TEXT,
-    -- automatic_trans_speed INTEGER,
     mpg_city REAL,
     mpg_highway REAL,
     mpg_combined REAL,
@@ -44,8 +32,6 @@ CREATE TABLE IF NOT EXISTS dim_history (
     has_vehicle_history_report BOOLEAN,
     has_thirdparty_vehicle_damage_report BOOLEAN,
     is_fleet_vehicle BOOLEAN
-    -- base_msrp REAL,
-    -- destination_charge REAL
 );
 
 CREATE TABLE IF NOT EXISTS dim_seller (
