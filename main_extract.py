@@ -3,27 +3,23 @@ from datetime import datetime
 import minio_util
 import asyncio
 import queue
+import traceback
 
 
 def request_listings_api(session, zip: str, distance: str, page: int):
     # Customizable parameters: zip, distance, pageNumber
-    api_url = f"https://www.cargurus.com/Cars/searchPage.action?zip={zip}&distance={distance}&sourceContext=carGurusHomePageModel&inventorySearchWidgetType=AUTO&sortDir=ASC&sortType=BEST_MATCH&srpVariation=DEFAULT_SEARCH&isDeliveryEnabled=true&nonShippableBaseline=0&pageNumber={page}&filtersModified=true"
+    api_url = f"https://www.cargurus.com/Cars/searchPage.action?zip={zip}&distance={distance}&sourceContext=carGurusHomePageModel&sortDir=ASC&sortType=BEST_MATCH&srpVariation=DEFAULT_SEARCH&isDeliveryEnabled=true&nonShippableBaseline=0&pageNumber={page}&filtersModified=true"
     try:
         response = session.get(api_url)
         data = response.json()
-        car_ids = (
-            [
-                str(listing["data"]["id"])
-                for listing in data["tiles"]
-                if listing["type"] != "MERCH"
-            ]
-            if "tiles" in data
-            else []
-        )
+        car_ids = []
+        for listing in data["tiles"]:
+            if "MERCH" not in listing["type"]:
+                car_ids.append(str(listing["data"]["id"]))
         return car_ids
     except Exception as e:
         print(f"Caught Error: {e}")
-        return []
+        traceback.print_exc()
 
 
 def request_details_api(
@@ -35,6 +31,7 @@ def request_details_api(
         response = session.get(api_url)
     except Exception as e:
         print(f"Caught Error: {e}")
+        traceback.print_exc()
         if retry_q is not None:
             retry_q.put(id)
             print(f"Added id {id} into retry queue")
@@ -163,14 +160,10 @@ async def extract():
         car_ids = request_listings_api(session, zip, distance, current_page)
 
         # Extract and upload all car data on current page
-        # print(
-        #     f"=============================== Page {current_page} ====================================="
-        # )
         for id in car_ids:
             car_data = request_details_api(session, id, zip, distance, retry_queue)
             if car_data:
                 unique_cars.add(car_data["specs"]["vin"])
-                # print(car_data["specs"]["fullName"])
                 asyncio.create_task(
                     minio_util.upload_json(
                         source="cargurus",
@@ -181,19 +174,14 @@ async def extract():
 
         # Retry failed car detail requests of the same page. Retry only once
         if not retry_queue.empty():
-            # print(
-            #     f"=============================== Page {current_page} Retries ====================================="
-            # )
             while not retry_queue.empty():
                 car_data = request_details_api(
                     session, retry_queue.get(), zip, distance
                 )
                 if not car_data:
-                    # print("Car Not Found on Retry. Car Skipped")
                     continue
                 else:
                     unique_cars.add(car_data["specs"]["vin"])
-                    # print(car_data["specs"]["fullName"])
                     asyncio.create_task(
                         minio_util.upload_json(
                             source="cargurus",
@@ -210,8 +198,6 @@ async def extract():
     main_coro = asyncio.current_task()
     all_tasks.remove(main_coro)
     await asyncio.wait(all_tasks)
-
-    # print(f"\n\nSuccessfully extracted {len(unique_cars)} car records")
 
 
 def run_extract_sync():
