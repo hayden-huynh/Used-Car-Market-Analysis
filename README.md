@@ -8,8 +8,9 @@
     - Extra computed fields such as mileage per year are added to each record
     - Fields are cast to their expected data types
     - Transformed data records are stored back into the object store as a single combined csv file
-- `main_load.py` reads the combined csv file from the object store into a pandas DataFrame, and performs necessary type casts before loading all data into a Postgres database. New data records are appended, while existing records are updated with newer data
-- `main_orchestrate.py` defines the [Airflow](https://airflow.apache.org/) DAG that schedules the automated execution of the three Python scripts above. The pipeline is scheduled to run once every two hours, and the data of each run is handled separately within that run
+- `main_load.py` reads the combined csv file from the object store into a pandas DataFrame, and performs necessary type casts before loading all data into a Postgres database. New data records are appended, while existing records are updated with newer data.
+- `main_orchestrate.py` defines the [Airflow](https://airflow.apache.org/) DAG that schedules the automated execution of the three Python scripts above. The pipeline is scheduled to run once every two hours, and the data of each run is handled separately within that run.
+- The data pipeline operates on a local server, with the object store and database components running in Docker containers, and scripts are scheduled to automatically execute by a local Apache Airflow instance.
 
 ## Data Modelling
 ![](used-car-schema.drawio.png)
